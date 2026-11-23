@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Indie Builder Toolkit — 2026 MoR Fee Calculator & Remote MCP Config Generator</title>
+  <meta name="description" content="Free 2026 Merchant of Record fee calculator comparing Stripe, Polar.sh, Lemon Squeezy, Gumroad, Paddle & Apify PPE, plus a 1-click Remote MCP JSON config generator for Claude Desktop and Cursor." />
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --card: #131926;
+      --border: #232d42;
+      --text: #e6edf7;
+      --muted: #93a1b8;
+      --accent: #5b8cff;
+      --green: #2dd4bf;
+      --amber: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 32px 20px 64px; }
+    header { margin-bottom: 28px; }
+    h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: -0.02em; }
+    p.sub { margin: 0; color: var(--muted); font-size: 15px; }
+    .tabs { display: flex; gap: 10px; margin: 24px 0 20px; flex-wrap: wrap; }
+    .tab {
+      padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--card); color: var(--muted); cursor: pointer; font-weight: 600; font-size: 14px;
+    }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px; margin-bottom: 18px;
+    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+    label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    input[type="number"], input[type="text"], select {
+      width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+      background: #0d121d; color: var(--text); font-size: 14px;
+    }
+    .checks { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; }
+    .checks label { display: flex; align-items: center; gap: 8px; color: var(--text); cursor: pointer; margin: 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .best { color: var(--green); font-weight: 700; }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px;
+      background: rgba(45, 212, 191, 0.14); color: var(--green); margin-left: 6px;
+    }
+    .mcp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .mcp-item {
+      border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: #0d121d;
+      display: flex; gap: 10px; align-items: flex-start; cursor: pointer;
+    }
+    .mcp-item input { margin-top: 3px; }
+    .mcp-item strong { display: block; font-size: 14px; }
+    .mcp-item span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .mcp-item a { color: var(--accent); font-size: 12px; text-decoration: none; }
+    pre {
+      background: #090d14; border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px; overflow-x: auto; font-size: 13px; color: #c7d7f4; margin: 0;
+    }
+    .btn {
+      padding: 9px 14px; border-radius: 8px; border: none; background: var(--accent);
+      color: #fff; font-weight: 600; cursor: pointer; font-size: 13px;
+    }
+    .btn:hover { opacity: 0.92; }
+    .bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px; flex-wrap: wrap; }
+    footer { margin-top: 36px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 18px; }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Indie Builder Toolkit (2026)</h1>
+      <p class="sub">Zero-backend developer utilities: compare Merchant of Record (MoR) net payouts in real time &amp; generate Remote MCP configs for Claude Desktop and Cursor.</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="mor">1. MoR &amp; Payment Fee Calculator</button>
+      <button class="tab" data-tab="mcp">2. Remote MCP Config Generator</button>
+    </div>
+
+    <!-- PANEL 1: MoR Fee Calculator -->
+    <section id="tab-mor" class="panel active">
+      <div class="card">
+        <div class="grid">
+          <div>
+            <label for="price">Product Price (USD)</label>
+            <input id="price" type="number" min="1" step="1" value="29" />
+          </div>
+          <div>
+            <label for="sales">Monthly Sales Count</label>
+            <input id="sales" type="number" min="1" step="1" value="50" />
+          </div>
+          <div>
+            <label for="intlPct">International (Non-US) Buyers (%)</label>
+            <input id="intlPct" type="number" min="0" max="100" step="5" value="40" />
+          </div>
+          <div>
+            <label for="ppPct">PayPal Checkout Share (%)</label>
+            <input id="ppPct" type="number" min="0" max="100" step="5" value="20" />
+          </div>
+        </div>
+        <div class="checks">
+          <label><input id="isSub" type="checkbox" /> Recurring Subscription (+0.5% on Lemon Squeezy)</label>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="bar">
+          <strong>Net Payout Comparison (Monthly Gross: <span id="grossOut">$1,450.00</span>)</strong>
+          <span style="font-size:12px;color:var(--muted)">Estimates based on standard 2026 public starter pricing; excludes FX conversion spreads.</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Platform</th>
+                <th>MoR (Handles Global Tax)</th>
+                <th>Total Fees / Mo</th>
+                <th>Effective Fee %</th>
+                <th>Net Take-Home / Mo</th>
+              </tr>
+            </thead>
+            <tbody id="morBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 2: Remote MCP Config Generator -->
+    <section id="tab-mcp" class="panel">
+      <div class="card">
+        <div class="grid" style="margin-bottom:14px">
+          <div>
+            <label for="clientType">MCP Client</label>
+            <select id="clientType">
+              <option value="claude">Claude Desktop / Cursor / Windsurf (mcpServers)</option>
+              <option value="vscode">VS Code (servers)</option>
+            </select>
+          </div>
+          <div>
+            <label for="apifyTok">Apify Token Placeholder (stays in browser)</label>
+            <input id="apifyTok" type="text" value="YOUR_APIFY_TOKEN" />
+          </div>
+        </div>
+        <label>Select Zero-Proxy Remote MCP Servers (Streamable HTTP):</label>
+        <div class="mcp-grid" id="mcpList"></div>
+      </div>
+
+      <div class="card">
+        <div class="bar">
+          <strong>Generated MCP JSON Configuration</strong>
+          <button class="btn" id="copyBtn">Copy JSON</button>
+        </div>
+        <pre id="mcpJson"></pre>
+      </div>
+    </section>
+
+    <footer>
+      Built as a 100% client-side static micro-tool for Cloudflare Pages. Powered by our zero-proxy
+      <a href="https://apify.com/shawn1905" target="_blank" rel="noopener">Apify Actor &amp; Remote MCP Suite</a>
+      (Substack, ESPN Sports, 5-Board Remote Jobs, Google News, Polymarket/Kalshi, Shopify &amp; Podcast Host Emails).
+    </footer>
+  </div>
+
+  <script>
+    // Tabs
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // MoR Calculator
+    const morInputs = ['price', 'sales', 'intlPct', 'ppPct', 'isSub'];
+    function fmt(n) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+    function recalcMor() {
+      const price = Math.max(0, Number(document.getElementById('price').value) || 0);
+      const sales = Math.max(0, Number(document.getElementById('sales').value) || 0);
+      const intl = Math.min(100, Math.max(0, Number(document.getElementById('intlPct').value) || 0)) / 100;
+      const pp = Math.min(100, Math.max(0, Number(document.getElementById('ppPct').value) || 0)) / 100;
+      const isSub = document.getElementById('isSub').checked;
+      const gross = price * sales;
+      document.getElementById('grossOut').textContent = fmt(gross);
+
+      const models = [
+        {
+          name: 'Stripe Standard (Direct)',
+          mor: 'No (You file tax)',
+          fee: gross * (0.029 + 0.015 * intl) + sales * 0.30,
+        },
+        {
+          name: 'Polar.sh (Starter)',
+          mor: 'Yes (Global VAT/Tax)',
+          fee: gross * (0.05 + 0.015 * intl) + sales * 0.50,
+        },
+        {
+          name: 'Paddle',
+          mor: 'Yes (Global VAT/Tax)',
+          fee: gross * 0.05 + sales * 0.50,
+        },
+        {
+          name: 'Lemon Squeezy',
+          mor: 'Yes (Global VAT/Tax)',
+          fee: gross * (0.05 + 0.015 * intl + 0.015 * pp + (isSub ? 0.005 : 0)) + sales * 0.50,
+        },
+        {
+          name: 'Gumroad (Direct Link)',
+          mor: 'Yes (Global VAT/Tax)',
+          fee: gross * 0.10 + sales * 0.50,
+        },
+        {
+          name: 'Gumroad (Discover Marketplace)',
+          mor: 'Yes + Marketplace Traffic',
+          fee: gross * 0.30,
+        },
+        {
+          name: 'Apify Store (PPE Pure-HTTP)',
+          mor: 'Yes + Built-in Buyer Traffic',
+          fee: gross * 0.22,
+        },
+      ].map(m => ({ ...m, net: Math.max(0, gross - m.fee), eff: gross > 0 ? (m.fee / gross) * 100 : 0 }));
+
+      const bestMorNet = Math.max(...models.filter(m => m.mor.startsWith('Yes')).map(m => m.net));
+      const tbody = document.getElementById('morBody');
+      tbody.innerHTML = models.map(m => {
+        const isBestMor = m.mor.startsWith('Yes') && Math.abs(m.net - bestMorNet) < 0.01 && gross > 0;
+        return `<tr>
+          <td><strong>${m.name}</strong>${isBestMor ? '<span class="badge">Best MoR Net</span>' : ''}</td>
+          <td style="color:var(--muted)">${m.mor}</td>
+          <td>${fmt(m.fee)}</td>
+          <td>${m.eff.toFixed(1)}%</td>
+          <td class="${isBestMor ? 'best' : ''}">${fmt(m.net)}</td>
+        </tr>`;
+      }).join('');
+    }
+    morInputs.forEach(id => document.getElementById(id).addEventListener('input', recalcMor));
+    recalcMor();
+
+    // MCP Config Generator
+    const SERVERS = [
+      {
+        key: 'google-news',
+        name: 'Google News Real-Time MCP',
+        desc: 'Multi-query news search, 8 topics & 50+ countries ($0.004/call)',
+        url: 'https://shawn1905--google-news-rss-mcp-server.apify.actor/mcp',
+        store: 'https://apify.com/shawn1905/google-news-rss-mcp-server',
+        checked: true,
+      },
+      {
+        key: 'remote-jobs',
+        name: 'Remote Jobs & B2B Hiring Leads MCP',
+        desc: '5 official remote boards deduplicated + hiring companies ($0.005/call)',
+        url: 'https://shawn1905--remote-jobs-intelligence-hub.apify.actor/mcp',
+        store: 'https://apify.com/shawn1905/remote-jobs-intelligence-hub',
+        checked: true,
+      },
+      {
+        key: 'espn-sports',
+        name: 'ESPN Sports Data & Odds MCP',
+        desc: '16 leagues live scores, boxscores, odds & injuries ($0.004-$0.008/call)',
+        url: 'https://shawn1905--espn-sports-mcp-server.apify.actor/mcp',
+        store: 'https://apify.com/shawn1905/espn-sports-mcp-server',
+        checked: false,
+      },
+      {
+        key: 'prediction-markets',
+        name: 'Polymarket & Kalshi Odds MCP',
+        desc: 'Live implied probabilities & cross-venue spreads ($0.005/call)',
+        url: 'https://shawn1905--prediction-markets-mcp-server.apify.actor/mcp',
+        store: 'https://apify.com/shawn1905/prediction-markets-mcp-server',
+        checked: false,
+      },
+      {
+        key: 'shopify-intel',
+        name: 'Shopify Store Intelligence MCP',
+        desc: 'Products, variants, stock & discount monitoring ($0.004/call)',
+        url: 'https://shawn1905--shopify-store-intel-mcp.apify.actor/mcp',
+        store: 'https://apify.com/shawn1905/shopify-store-intel-mcp',
+        checked: false,
+      },
+      {
+        key: 'podcast-leads',
+        name: 'Podcast Leads & Host Emails MCP',
+        desc: 'Active podcast discovery + RSS host contact emails ($0.005/call)',
+        url: 'https://shawn1905--podcast-leads-email-mcp.apify.actor/mcp',
+        store: 'https://apify.com/shawn1905/podcast-leads-email-mcp',
+        checked: false,
+      },
+    ];
+
+    const listEl = document.getElementById('mcpList');
+    SERVERS.forEach((s, idx) => {
+      const lbl = document.createElement('label');
+      lbl.className = 'mcp-item';
+      lbl.innerHTML = `<input type="checkbox" data-idx="${idx}" ${s.checked ? 'checked' : ''} />
+        <div><strong>${s.name}</strong><span>${s.desc}</span><a href="${s.store}" target="_blank" rel="noopener">View on Apify Store ↗</a></div>`;
+      listEl.appendChild(lbl);
+    });
+
+    function renderMcp() {
+      const client = document.getElementById('clientType').value;
+      const tok = document.getElementById('apifyTok').value.trim() || 'YOUR_APIFY_TOKEN';
+      const selected = {};
+      document.querySelectorAll('#mcpList input[type="checkbox"]:checked').forEach(cb => {
+        const s = SERVERS[Number(cb.dataset.idx)];
+        selected[s.key] = {
+          ...(client === 'vscode' ? { type: 'http' } : {}),
+          url: s.url,
+          headers: { Authorization: `Bearer ${tok}` },
+        };
+      });
+      const rootKey = client === 'vscode' ? 'servers' : 'mcpServers';
+      document.getElementById('mcpJson').textContent = JSON.stringify({ [rootKey]: selected }, null, 2);
+    }
+
+    listEl.addEventListener('change', renderMcp);
+    document.getElementById('clientType').addEventListener('change', renderMcp);
+    document.getElementById('apifyTok').addEventListener('input', renderMcp);
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      navigator.clipboard.writeText(document.getElementById('mcpJson').textContent);
+      const b = document.getElementById('copyBtn');
+      b.textContent = 'Copied!';
+      setTimeout(() => (b.textContent = 'Copy JSON'), 1500);
+    });
+    renderMcp();
+  </script>
+</body>
+</html>
