@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://shawn1905.github.io/indie-builder-toolkit/sitemap.xml
